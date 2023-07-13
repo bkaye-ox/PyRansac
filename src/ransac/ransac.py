@@ -40,7 +40,7 @@ def get_train_data(df, X: list[str], y: str):
 def get_convex_hull(X, x_z):
     try:
         from scipy.spatial import ConvexHull
-    except: 
+    except:
         raise Exception('requires scipy!')
     hull = ConvexHull(X)
     edges = X[hull.vertices, ...]
@@ -75,7 +75,16 @@ def grid_predict(est, X: np.array, steps: list[float], return_meta=True):
         return X_test, y_test
 
 
-def fit_ransac(X, y, regressor, N, m, inlier_dist, inlier_count_min):
+def fit_ransac(X, y, regressor, N, m, inlier_dist, inlier_count_min=None):
+    '''
+    X: inputs training data
+    y: outputs training data
+    regressor: callable(X,y) -> object // object.predict(X_test) -> y_test must exist
+    N: number of evaluations
+    m: points per evaluation
+    inlier_dist: threshold distance in y
+    inlier_count_min: early stop if sufficient inliers evaluated
+    '''
     samples = get_samples(X, y, N, m)
 
     inlier_max = 0
@@ -89,7 +98,7 @@ def fit_ransac(X, y, regressor, N, m, inlier_dist, inlier_count_min):
             inlier_max = count
             best_estimator = est
 
-        if inlier_max > inlier_count_min:
+        if inlier_count_min is not None and inlier_max > inlier_count_min:
             break
 
     X_in, y_in = get_inliers(X, y, best_estimator, inlier_dist)
